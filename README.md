@@ -265,5 +265,140 @@ end
 
 ![bin/rails routes](image-13.png)
 
+### Creating
 
+https://guides.rubyonrails.org/getting_started.html#creating-a-new-article
 
+`app/controllers/articles_controller.rb`
+
+```
+class ArticlesController < ApplicationController
+  def index
+    @articles = Article.all
+  end
+
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  def new
+    @article = Article.new
+  end
+
+  def create
+    @article = Article.new(title: "...", body: "...")
+
+    if @article.save
+      redirect_to @article
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+end
+```
+
+Y ahora las vistas:
+
+`app/views/articles/new.html.erb`
+
+```
+<h1>New Article</h1>
+
+<%= form_with model: @article do |form| %>
+  <div>
+    <%= form.label :title %><br>
+    <%= form.text_field :title %>
+  </div>
+
+  <div>
+    <%= form.label :body %><br>
+    <%= form.text_area :body %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
+```
+
+#### Parámetros fuertes
+
+Para evitar introducir los valores del nuevo objeto Article uno a uno (usando los parámetros recibidos por el formulario), Rails permite el uso de un concepto llamado "Strong Parameters", inspirado en el concepto del tipado fuerte https://en.wikipedia.org/wiki/Strong_and_weak_typing
+
+Para ello, crearemos un método privado con el nombre `article_params` que filtrará los parámetros.
+
+`app/controllers/articles_controller.rb`
+
+```
+class ArticlesController < ApplicationController
+  def index
+    @articles = Article.all
+  end
+
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  def new
+    @article = Article.new
+  end
+
+  def create
+    @article = Article.new(article_params)
+
+    if @article.save
+      redirect_to @article
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  private
+    def article_params
+      params.require(:article).permit(:title, :body)
+    end
+end
+```
+
+#### Validaciones
+
+Usar validaciones en el modelo para evitar errores:
+
+`app/models/article.rb`
+
+```
+class Article < ApplicationRecord
+  validates :title, presence: true
+  validates :body, presence: true, length: { minimum: 10 }
+end
+```
+
+Esto nos permite añadir algunas validaciones en el formulario:
+
+`app/views/articles/new.html.erb`
+
+```
+<h1>New Article</h1>
+
+<%= form_with model: @article do |form| %>
+  <div>
+    <%= form.label :title %><br>
+    <%= form.text_field :title %>
+    <% @article.errors.full_messages_for(:title).each do |message| %>
+      <div><%= message %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :body %><br>
+    <%= form.text_area :body %><br>
+    <% @article.errors.full_messages_for(:body).each do |message| %>
+      <div><%= message %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
+```
