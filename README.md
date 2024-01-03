@@ -91,7 +91,7 @@ La ruta principal, por ahora, sigue siendo la página de prueba. Hay que definir
 
 ## Autoloading
 
-https://guides.rubyonrails.org/getting_started.html#autoloading
+https://guides.rubyonrails.org/getting_started.html#autoloading  
 more info: https://guides.rubyonrails.org/autoloading_and_reloading_constants.html
 
 Rails tiene una "autocarga" de los objetos y librerías imprescindibles. Por lo tanto, no hay que usar `requiere "application_controller"` (por ejemplo), ya que con heredar es suficiente.
@@ -402,3 +402,222 @@ Esto nos permite añadir algunas validaciones en el formulario:
   </div>
 <% end %>
 ```
+
+### Update
+
+`app/controllers/articles_controller.rb`
+
+```
+class ArticlesController < ApplicationController
+  def index
+    @articles = Article.all
+  end
+
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  def new
+    @article = Article.new
+  end
+
+  def create
+    @article = Article.new(article_params)
+
+    if @article.save
+      redirect_to @article
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+    @article = Article.find(params[:id])
+  end
+
+  def update
+    @article = Article.find(params[:id])
+
+    if @article.update(article_params)
+      redirect_to @article
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  private
+    def article_params
+      params.require(:article).permit(:title, :body)
+    end
+end
+```
+
+#### Using partials between New and Edit
+
+https://guides.rubyonrails.org/getting_started.html#using-partials-to-share-view-code  
+more info: https://guides.rubyonrails.org/layouts_and_rendering.html#using-partials
+
+Como el formulario de Edit y New son el mismo, usaremos el mismo partial para las dos vistas.
+
+`app/views/articles/_form.html.erb`
+
+```
+<%= form_with model: article do |form| %>
+  <div>
+    <%= form.label :title %><br>
+    <%= form.text_field :title %>
+    <% article.errors.full_messages_for(:title).each do |message| %>
+      <div><%= message %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :body %><br>
+    <%= form.text_area :body %><br>
+    <% article.errors.full_messages_for(:body).each do |message| %>
+      <div><%= message %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
+```
+
+### Delete
+
+https://guides.rubyonrails.org/getting_started.html#deleting-an-article
+
+`app/controllers/articles_controller.rb`
+
+```
+class ArticlesController < ApplicationController
+  def index
+    @articles = Article.all
+  end
+
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  def new
+    @article = Article.new
+  end
+
+  def create
+    @article = Article.new(article_params)
+
+    if @article.save
+      redirect_to @article
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+    @article = Article.find(params[:id])
+  end
+
+  def update
+    @article = Article.find(params[:id])
+
+    if @article.update(article_params)
+      redirect_to @article
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @article = Article.find(params[:id])
+    @article.destroy
+
+    redirect_to root_path, status: :see_other
+  end
+
+  private
+    def article_params
+      params.require(:article).permit(:title, :body)
+    end
+end
+```
+
+a la vista del show `app/views/articles/show.html.erb` se añade:
+
+```
+<h1><%= @article.title %></h1>
+
+<p><%= @article.body %></p>
+
+<ul>
+  <li><%= link_to "Edit", edit_article_path(@article) %></li>
+  <li><%= link_to "Destroy", article_path(@article), data: {
+                    turbo_method: :delete,
+                    turbo_confirm: "Are you sure?"
+                  } %></li>
+</ul>
+```
+
+**Interesante** el uso de `data-turbo-method="delete"` y `data-turbo-confirm="Are you sure?"`
+
+## Ampliando con segundo modelo
+
+https://guides.rubyonrails.org/getting_started.html#adding-a-second-model
+
+```
+$ bin/rails generate model Comment commenter:string body:text article:references
+```
+
+`app/models/comment.rb`
+
+```
+class Comment < ApplicationRecord
+  belongs_to :article
+end
+```
+
+Se han generado relaciones entre modelos
+
+```
+$ bin/rails db:migrate
+```
+
+Con las asociaciones, puedes relacionar modelos y desde un objeto en concreto puedes llegar a todos los objetos relacionados. Ejemplo: `@article.comments`
+
+More info: https://guides.rubyonrails.org/association_basics.html
+
+### Añadiendo a la ruta con `resources`
+
+`config/routes.rb`
+
+```
+Rails.application.routes.draw do
+  root "articles#index"
+
+  resources :articles do
+    resources :comments
+  end
+end
+```
+
+### Controlador
+
+`app/controllers/comments_controller.rb`
+
+```
+class CommentsController < ApplicationController
+  def create
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.create(comment_params)
+    redirect_to article_path(@article)
+  end
+
+  private
+    def comment_params
+      params.require(:comment).permit(:commenter, :body)
+    end
+end
+```
+
+**Interesante** la manera de crear con la asociacion directamente: `@comment = @article.comments.create(comment_params)`
