@@ -13,7 +13,7 @@ https://guides.rubyonrails.org/getting_started.html
 
 In this tutorial we'll gonna create a weblog.
 
-### Generator
+## Generator
 
 The generator application create a new Rails application and install the gem dependencies
 
@@ -34,3 +34,19 @@ Al hacer una aplicación con este comando, te crea un git con la rama 'main' com
 Al haber doble git (el de esta carpeta y el de la carpeta `blog`) no puedo guardar todos los cambios a la vez en este mismo, así que he borrado la carpeta `.git` de la aplicación rails.
 
 ---
+
+## Open/Run rails
+
+When de new Rails application is created, you can run de Rails Server (running on Puma https://github.com/puma/puma).
+
+```
+$ bin/rails server
+```
+
+## Basic concepts
+
+Rails is an MVC framework. It uses models, views and controllers, and also routes.
+
+In terms of implementation: Routes are rules written in a Ruby DSL (Domain-Specific Language). Controllers are Ruby classes, and their public methods are actions. And views are templates, usually written in a mixture of HTML and Ruby.
+
+## Make Rails say "Hello"
