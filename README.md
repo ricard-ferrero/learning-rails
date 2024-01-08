@@ -621,3 +621,63 @@ end
 ```
 
 **Interesante** la manera de crear con la asociacion directamente: `@comment = @article.comments.create(comment_params)`
+
+## REFACTORING
+
+https://guides.rubyonrails.org/getting_started.html#refactoring
+
+Partials para los comments, en vez de ponerlos a pelo en el show de los article
+
+**INTERESANTISIMO** NO HACE FALTA HACER UN BUCLE automáticamente se genera solo con hacer un render:
+
+![Alt text](image-14.png)
+
+![Alt text](image-15.png)
+
+Parece ser que al usar `render @articles.comments` en vez de buscar el show, busca un `_comments`
+
+![Alt text](image-16.png)
+
+### Using concerns
+
+https://guides.rubyonrails.org/getting_started.html#using-concerns
+
+```
+$ bin/rails generate migration AddStatusToArticles status:string
+$ bin/rails generate migration AddStatusToComments status:string
+$ bin/rails db:migrate
+```
+
+![Alt text](image-17.png)
+
+Los Concerns son comportamientos compartidos entre diferentes modelos (no entiendo porque no heredan)
+
+![Alt text](image-18.png)
+
+Ara puc importar aquest comportament als altres models:
+
+![Alt text](image-19.png)
+
+![Alt text](image-20.png)
+
+Además, se le pueden añadir métodos de clase:
+
+```
+class_methods do
+  def public_count
+    where(status: 'public').count
+  end
+end
+```
+
+![Alt text](image-21.png)
+
+Y ahora podemos hacer uso del método .public_count() con cualquier clase:
+
+![Alt text](image-22.png)
+
+**IMPORTANT** Podem cridar atributs de classe amb els doble colons: `Visible::VALID_STATUSES`. He fet proves i també es pot fer desde les classes que ho hereden (permetent el polimorfisme)
+
+## DELETING comments
+
+https://guides.rubyonrails.org/getting_started.html#deleting-comments
