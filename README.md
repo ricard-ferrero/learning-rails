@@ -622,7 +622,7 @@ end
 
 **Interesante** la manera de crear con la asociacion directamente: `@comment = @article.comments.create(comment_params)`
 
-## REFACTORING
+### REFACTORING
 
 https://guides.rubyonrails.org/getting_started.html#refactoring
 
@@ -678,6 +678,25 @@ Y ahora podemos hacer uso del método .public_count() con cualquier clase:
 
 **IMPORTANT** Podem cridar atributs de classe amb els doble colons: `Visible::VALID_STATUSES`. He fet proves i també es pot fer desde les classes que ho hereden (permetent el polimorfisme)
 
-## DELETING comments
+### DELETING comments
 
 https://guides.rubyonrails.org/getting_started.html#deleting-comments
+
+## Security
+
+https://guides.rubyonrails.org/getting_started.html#security
+
+Seguirdad básica: en un controlador añadir...
+
+```
+http_basic_authenticate_with name: "dhh", password: "secret", only: :destroy
+```
+
+![Alt text](image-23.png)
+
+Es un sistema de autenticacion HTTP básico que hace uso del propio navegador
+
+"Other authentication methods are available for Rails applications. Two popular authentication add-ons for Rails are the **Devise rails engine** (https://github.com/plataformatec/devise) and the **Authlogic gem** (https://github.com/binarylogic/authlogic), along with a number of others."
+
+More info: https://guides.rubyonrails.org/security.html
+
